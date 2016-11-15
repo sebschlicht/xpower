@@ -8,22 +8,27 @@ XP_POWER_MODE_AC=ac
 XP_DEFAULT_POWER_MODE="$XP_POWER_MODE_BATTERY"
 
 # variable initialization section
-set_power_mode=false
 change_power_mode=false
+update_settings=false
 new_power_mode="$XP_DEFAULT_POWER_MODE"
 
 # Prints the usage of the script in case of using the help command.
 printUsage () {
-  echo 'Usage: '"$program_name"' [-c|-m] POWER_MODE'
+  echo 'Usage: '"$program_name"' [-u] [-c POWER_MODE]'
   echo
-  echo "$program_title"' is a tool to store multiple screen settings (including backlight brightness, dimming flag and idle dealy) dependent on the system power mode.'
+  echo "$program_title"' is a tool to store multiple screen settings (including backlight brightness, dimming flag and idle delay) dependent on the system power mode.'
+  echo
+  echo 'This tool can either'
+  echo "* apply the xpower settings to the system (no options)"
+  echo "* update the xpower settings from the system ('-u' option)"
+  echo "* apply the settings of an other power mode to the system ('-c' option)"
   echo
   echo 'Valid power modes: [ac|battery]'
   echo
   echo 'Options:'
-  echo '-c, --change-mode\t Changes the power mode to the mode specified. If the last known power mode equals the new power mode, this action does nothing. If not, the screen settings of the previous power mode are persisted before the stored settings of the specified mode are applied to the system.'
-  echo '-s, --set-mode\t Sets the power mode to the mode specified - without storing screen setting changes that may have been made.'
-  echo '-h, --help	Display this help message and exit.'
+  echo "-c, --change-mode  Change the power mode to the new power mode specified. The current screen settings are stored before the new settings are applied to the system."
+  echo "-u, --update       Update the screen settings of the current power mode according to the system settings."
+  echo "-h, --help         Display this help message and exit."
 }
 
 # Parses the startup arguments into variables.
@@ -41,13 +46,10 @@ parseArguments () {
       shift
       change_power_mode=true
       new_power_mode="$1"
-      echo 'trying to set power mode to '"$new_power_mode"
       ;;
-      # set power mode
-      -s|--set-mode)
-      shift
-      set_power_mode=true
-      new_power_mode="$1"
+      # update settings
+      -u|--update)
+      update_settings=true
       ;;
       # unknown option
       -*)
@@ -242,25 +244,30 @@ if [ ! -d "$d_xpower_config" ]; then
   sudo chown -R "$user":"$user" "$d_xpower_config"
 fi
 
-# logging
 crr_power_mode=$( detect_power_mode )
+if ! "$change_power_mode"; then
+  new_power_mode="$crr_power_mode"
+fi
+
+# logging
 log "changing power mode: $change_power_mode"
 log "setting power mode: $set_power_mode"
 log "actual power mode: $crr_power_mode"
 log "new power mode: $new_power_mode"
 
-# compare new power mode with last power mode stored
 if [ -f "$f_xpower_mode" ]; then
-  stored_power_mode=$( cat "$f_xpower_mode" )
-  if [ "$stored_power_mode" == "$new_power_mode" ]; then
-    log 'Power mode is up-to-date, exiting.'
-    exit 0
+  # ignore changing if power mode hasn't changed
+  if "$change_power_mode"; then
+    stored_power_mode=$( cat "$f_xpower_mode" )
+    if "$change_power_mode" && [ "$stored_power_mode" == "$new_power_mode" ]; then
+      log 'Power mode is up-to-date, exiting.'
+      exit 0
+    fi
+    update_settings=true
   fi
 else
-  if "$change_power_mode"; then
-    change_power_mode=false
-    set_power_mode=true
-  fi
+  # prohibit unintended update of settings
+  update_settings=false
 fi
 echo "$new_power_mode" > "$f_xpower_mode"
 
@@ -279,14 +286,14 @@ if "$change_power_mode"; then
 fi
 
 # store the current settings for the current power mode
-if ! "$set_power_mode"; then
+if "$update_settings"; then
   log "storing current settings for $crr_power_mode mode..."
   store_backlight "$crr_power_mode"
   store_idle_delay "$crr_power_mode"
 fi
 
-# restore the settings of the new power mode
-if "$change_power_mode" || "$set_power_mode"; then
+if ! "$update_settings" || "$change_power_mode"; then
+  # restore the settings of the enabled power mode
   log "restoring settings from $new_power_mode mode..."
   restore_backlight "$new_power_mode"
   restore_idle_delay "$new_power_mode"
