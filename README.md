@@ -53,6 +53,16 @@ In order to install the script before it becomes a package:
   
   and reboot.
 
+## Usage
+
+Once installed, you can change the screen settings in the _System Settings_ of Ubuntu as you're used to.
+However, these settings are now separated for the two power modes (AC, battery).
+Set a high brightness when your power cable is connected and exit the _System Settings_.
+Unplug the power cable, re-open the _System Settings_ and set a low brightness.
+Plug in the power cable again and the screen will be lightened up.
+
+Please note that the swapping of the screen settings will require you to close and re-open the _System Settings_ in order to see the changes in the GUI.
+
 ## Open Questions
 
 * Where to place the script and with which file permissions? It should be executable by all users.
