@@ -237,6 +237,8 @@ if [ ! -d "$d_xpower_user" ]; then
   echo "Retrieved user '$user' but its home directory '$d_xpower_user' is missing."
   exit 1
 fi
+# set the Xauthority file
+export XAUTHORITY="$d_xpower_user"/.Xauthority
 
 # create the config folder if missing
 if [ ! -d "$d_xpower_config" ]; then
