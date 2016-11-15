@@ -1,6 +1,6 @@
 # xpower
-`xpower` is a script to have multiple screen settings for the different power modes on a laptop.
-It, for example, allows to have a higher screen brightness when AC is connected and a lower screen brightness when the laptop is running on battery.
+`xpower` is a script to have multiple screen settings for the different power modes on a laptop.  
+For example, it allows to have a high screen brightness when the power cable is connected and a low screen brightness when the laptop is running on battery.
 There is a full [list of features](#features) below.
 
 `xpower` will be available as a package for Ubuntu and may be ported to other Unix distributions as well.
