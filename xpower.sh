@@ -12,11 +12,6 @@ set_power_mode=false
 change_power_mode=false
 new_power_mode="$XP_DEFAULT_POWER_MODE"
 
-#TODO detect user currently using the laptop locally
-user=sebschlicht
-d_xpower_config=/home/"$user"/.xpower
-f_xpower_mode=/tmp/xpower-mode
-
 # Prints the usage of the script in case of using the help command.
 printUsage () {
   echo 'Usage: '"$program_name"' [-c|-m] POWER_MODE'
@@ -128,6 +123,11 @@ get_idle_delay_file () {
 # main script function section
 ##############################
 
+detect_local_user() {
+  local username=$( who | grep '\(\:0\)' | cut -d' ' -f1 | sort | uniq )
+  log "$username"
+}
+
 # Detects the current power mode.
 detect_power_mode() {
   on_ac_power
@@ -223,6 +223,18 @@ fi
 
 # execute main script functions
 ###############################
+
+user=$( detect_local_user )
+d_xpower_user=/home/"$user"
+d_xpower_config="$d_xpower_user"/.xpower
+f_xpower_mode=/tmp/xpower-mode
+
+# check if user has a home directory to write to
+if [ ! -d "$d_xpower_user" ]; then
+  echo 'Failed to retrieve user automatically!'
+  echo "Retrieved user '$user' but its home directory '$d_xpower_user' is missing."
+  exit 1
+fi
 
 # create the config folder if missing
 if [ ! -d "$d_xpower_config" ]; then
