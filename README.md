@@ -27,9 +27,9 @@ In order to install the script before it becomes a package:
 
   **/etc/udev/rules.d/80-power-mode**:
   
-      # full brightness when on AC
+      # power cable plugged in
       ACTION=="change", SUBSYSTEM=="power_supply", ATTR{type}=="Mains", ATTR{online}=="1", ENV{DISPLAY}=":0", RUN+="/usr/local/bin/xpower -c ac"
-      # reduce brightness when on battery
+      # running on battery
       ACTION=="change", SUBSYSTEM=="power_supply", ATTR{type}=="Mains", ATTR{online}=="0", ENV{DISPLAY}=":0", RUN+="/usr/local/bin/xpower -c battery"
 
 3. register calls to this script on startup and shutdown to set the screen settings at startup and store changes on shutdown
