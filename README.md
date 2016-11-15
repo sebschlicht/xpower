@@ -1,5 +1,5 @@
 # xpower
-`xpower` is a tool (shell script) for laptops running Ubuntu that enables users to maintain independent screen setting sets for the two power modes _AC_ and _battery_ via the _System Settings_.
+`xpower` is a tool (shell script) for laptops running Ubuntu (15.04 and above, I guess) that enables users to maintain independent screen setting sets for the two power modes _AC_ and _battery_ via the _System Settings_.
 
 The tool automatically recovers the appropriate screen settings on startup and swaps the two screen setting sets whenever the power cable is plugged or unplugged.
 
