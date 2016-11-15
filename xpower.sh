@@ -14,7 +14,8 @@ new_power_mode="$XP_DEFAULT_POWER_MODE"
 
 #TODO detect user currently using the laptop locally
 user=sebschlicht
-d_xpower_config="/home/$user/.xpower"
+d_xpower_config=/home/"$user"/.xpower
+f_xpower_mode=/tmp/xpower-mode
 
 # Prints the usage of the script in case of using the help command.
 printUsage () {
@@ -226,21 +227,34 @@ fi
 # create the config folder if missing
 if [ ! -d "$d_xpower_config" ]; then
   mkdir -p "$d_xpower_config"
-  touch "$f_power_mode"
-  touch $( get_backlight_file "$XP_POWER_MODE_AC" )
-  touch $( get_backlight_file "$XP_POWER_MODE_BATTERY" )
   sudo chown -R "$user":"$user" "$d_xpower_config"
 fi
 
+# logging
 crr_power_mode=$( detect_power_mode )
 log "changing power mode: $change_power_mode"
 log "setting power mode: $set_power_mode"
 log "actual power mode: $crr_power_mode"
 log "new power mode: $new_power_mode"
 
+# compare new power mode with last power mode stored
+if [ -f "$f_xpower_mode" ]; then
+  stored_power_mode=$( cat "$f_xpower_mode" )
+  if [ "$stored_power_mode" == "$new_power_mode" ]; then
+    log 'Power mode is up-to-date, exiting.'
+    exit 0
+  fi
+else
+  if "$change_power_mode"; then
+    change_power_mode=false
+    set_power_mode=true
+  fi
+fi
+echo "$new_power_mode" > "$f_xpower_mode"
+
 if "$change_power_mode"; then
   if [ "$crr_power_mode" != "$new_power_mode" ]; then
-    print_warning "The power mode is already active, exiting."
+    print_warning "The specified power mode is incorrect, exiting."
     exit 0
   fi
   # the current power mode is the other one
@@ -251,15 +265,6 @@ if "$change_power_mode"; then
   fi
   log "assuming previous power mode: $crr_power_mode"
 fi
-
-f_lock=/tmp/xpower.lck
-stored=$( cat "$f_lock" )
-log 'current stored mode: '"$stored"
-if [ "$stored" == "$new_power_mode" ]; then
-  log 'Power mode has not changed, exiting.'
-  exit 0
-fi
-echo "$new_power_mode" > "$f_lock"
 
 # store the current settings for the current power mode
 if ! "$set_power_mode"; then
