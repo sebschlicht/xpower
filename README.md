@@ -19,37 +19,37 @@ There is a full [list of features](#features) below.
 In order to install the script before it becomes a package:
 
 1. copy the script to an appropriate directory
-
-    sudo cp xpower.sh /usr/local/bin/xpower
-    sudo chmod +x /usr/local/bin/xpower
+  
+        sudo cp xpower.sh /usr/local/bin/xpower
+        sudo chmod +x /usr/local/bin/xpower
 
 2. register calls to this script on power mode changes via `udev` rules that change to power mode to the new one
 
   **/etc/udev/rules.d/80-power-mode**:
   
-    # full brightness when on AC
-    ACTION=="change", SUBSYSTEM=="power_supply", ATTR{type}=="Mains", ATTR{online}=="1", ENV{DISPLAY}=":0", ENV{XAUTHORITY}="/home/sebschlicht/.Xauthority", RUN+="/usr/local/bin/xpower -c ac"
-    # reduce brightness when on battery
-    ACTION=="change", SUBSYSTEM=="power_supply", ATTR{type}=="Mains", ATTR{online}=="0", ENV{DISPLAY}=":0", ENV{XAUTHORITY}="/home/sebschlicht/.Xauthority", RUN+="/usr/local/bin/xpower -c battery"
+      # full brightness when on AC
+      ACTION=="change", SUBSYSTEM=="power_supply", ATTR{type}=="Mains", ATTR{online}=="1", ENV{DISPLAY}=":0", ENV{XAUTHORITY}="/home/sebschlicht/.Xauthority", RUN+="/usr/local/bin/xpower -c ac"
+      # reduce brightness when on battery
+      ACTION=="change", SUBSYSTEM=="power_supply", ATTR{type}=="Mains", ATTR{online}=="0", ENV{DISPLAY}=":0", ENV{XAUTHORITY}="/home/sebschlicht/.Xauthority", RUN+="/usr/local/bin/xpower -c battery"
 
 3. register calls to this script on startup and shutdown to set the screen settings at startup and store changes on shutdown
   
   **/etc/systemd/system/xpower.service**:
 
-    [Unit]
-    Description=Synchronizes the screen settings with xpower.
-    
-    [Service]
-    Type=oneshot
-    ExecStart=/usr/local/bin/xpower
-    ExecStop=/usr/local/bin/xpower -u
-    
-    [Install]
-    WantedBy=multi-user.target
+      [Unit]
+      Description=Synchronizes the screen settings with xpower.
+      
+      [Service]
+      Type=oneshot
+      ExecStart=/usr/local/bin/xpower
+      ExecStop=/usr/local/bin/xpower -u
+      
+      [Install]
+      WantedBy=multi-user.target
   
   activate it
   
-    systemctl enable xpower
+      systemctl enable xpower
   
   and reboot.
 
