@@ -32,7 +32,7 @@ In order to install the script before it becomes a package:
 
 1. register calls to this script on power mode changes via `udev` rules that change to power mode to the new one
 
-  **/etc/udev/rules.d/80-power-mode**:
+  **/etc/udev/rules.d/80-power-mode.rules**:
   
       # power cable plugged in
       ACTION=="change", SUBSYSTEM=="power_supply", ATTR{type}=="Mains", ATTR{online}=="1", ENV{DISPLAY}=":0", RUN+="/usr/local/bin/xpower -c ac"
