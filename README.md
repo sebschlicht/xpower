@@ -1,5 +1,5 @@
 # xpower
-`xpower` is a tool (shell script) for laptops running Ubuntu that enables users to maintain independent screen setting sets for the two power modes _AC_ and _battery_ via the _System Settings_.
+`xpower` is a tool (shell script) for laptops running Ubuntu (15.04 and above, I guess) that enables users to maintain independent screen setting sets for the two power modes _AC_ and _battery_ via the _System Settings_.
 
 The tool automatically recovers the appropriate screen settings on startup and swaps the two screen setting sets whenever the power cable is plugged or unplugged.
 
@@ -21,21 +21,25 @@ There is a full [list of features](#features) below.
 
 In order to install the script before it becomes a package:
 
+1. install the dependencies
+
+        sudo apt-get install xbacklight
+
 1. copy the script to an appropriate directory
   
         sudo cp xpower.sh /usr/local/bin/xpower
         sudo chmod +x /usr/local/bin/xpower
 
-2. register calls to this script on power mode changes via `udev` rules that change to power mode to the new one
+1. register calls to this script on power mode changes via `udev` rules that change to power mode to the new one
 
-  **/etc/udev/rules.d/80-power-mode**:
+  **/etc/udev/rules.d/80-power-mode.rules**:
   
       # power cable plugged in
       ACTION=="change", SUBSYSTEM=="power_supply", ATTR{type}=="Mains", ATTR{online}=="1", ENV{DISPLAY}=":0", RUN+="/usr/local/bin/xpower -c ac"
       # running on battery
       ACTION=="change", SUBSYSTEM=="power_supply", ATTR{type}=="Mains", ATTR{online}=="0", ENV{DISPLAY}=":0", RUN+="/usr/local/bin/xpower -c battery"
 
-3. register calls to this script on startup and shutdown to set the screen settings at startup and store changes on shutdown
+1. register calls to this script on startup and shutdown to set the screen settings at startup and store changes on shutdown
   
   **/etc/systemd/system/xpower.service**:
 
