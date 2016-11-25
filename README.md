@@ -19,46 +19,19 @@ There is a full [list of features](#features) below.
 
 ## Installation
 
-In order to install the script before it becomes a package:
+1. clone the repository
 
-1. install the dependencies
+1. switch into the repository
+   
+        cd xpower
 
-        sudo apt-get install xbacklight
-
-1. copy the script to an appropriate directory
-  
-        sudo cp xpower.sh /usr/local/bin/xpower
-        sudo chmod +x /usr/local/bin/xpower
-
-1. register calls to this script on power mode changes via `udev` rules that change to power mode to the new one
-
-  **/etc/udev/rules.d/80-power-mode.rules**:
-  
-      # power cable plugged in
-      ACTION=="change", SUBSYSTEM=="power_supply", ATTR{type}=="Mains", ATTR{online}=="1", ENV{DISPLAY}=":0", RUN+="/usr/local/bin/xpower -c ac"
-      # running on battery
-      ACTION=="change", SUBSYSTEM=="power_supply", ATTR{type}=="Mains", ATTR{online}=="0", ENV{DISPLAY}=":0", RUN+="/usr/local/bin/xpower -c battery"
-
-1. register calls to this script on startup and shutdown to set the screen settings at startup and store changes on shutdown
-  
-  **/etc/systemd/system/xpower.service**:
-
-      [Unit]
-      Description=Synchronizes the screen settings with xpower.
-      
-      [Service]
-      Type=oneshot
-      ExecStart=/usr/local/bin/xpower
-      ExecStop=/usr/local/bin/xpower -u
-      
-      [Install]
-      WantedBy=multi-user.target
-  
-  activate it
-  
-      systemctl enable xpower
-  
-  and reboot.
+1. execute the installer
+   
+        chmod u+x install.sh
+        ./install.sh
+       
+   Note: The installer has to use `sudo` in order to make necessary changes to the udev rules, for example.
+   For more details concerning the steps of the installer, refer to the [manual installation instructions](manual-installation.md).
 
 ## Usage
 
@@ -74,6 +47,7 @@ Please note that the swapping of the screen settings will require you to close a
 
 ## Open Questions
 
-* Where to place the script and with which file permissions? It should be executable by all users.
+
+* How to integrate that into the unity settings?
 * Will it be necessary to monitor `dconf` for screen setting changes in order to synchronize the settings if the system is powered off spontaneously?
 
