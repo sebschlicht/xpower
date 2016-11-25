@@ -25,7 +25,7 @@ There is a full [list of features](#features) below.
    
         cd xpower
 
-1. execute the installer
+1. execute the [installer](install.sh)
    
         chmod u+x install.sh
         ./install.sh
