@@ -15,7 +15,7 @@ There is a full [list of features](#features) below.
  * screen idle delay (managed via `gsettings`)
  * screen dimming flag (managed via `gsettings`)
  * DPMS (managed via `xset`)
-* maintains the screen settings across reboots
+* restores the applicable screen settings after rebooting and suspending
 
 ## Installation
 
