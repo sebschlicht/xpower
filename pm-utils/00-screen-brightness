@@ -1,0 +1,44 @@
+#
+# A script to toggle the screen brightness using xrandr.
+#
+# To install:
+#
+# sudo install 99-screen /etc/pm/sleep.d
+# sudo install 99-screen /etc/pm/power.d
+#
+
+# detect display
+echo "I am $(whoami)\n"
+XRSCREEN=$( xrandr -q | grep ' connected' | head -n 1 | cut -d ' ' -f1 )
+echo "screen: $XRSCREEN"
+
+##
+## POWER SAVE OFF
+##
+ac_power()
+{
+  ##
+  ## screen: full brightness
+  ##
+  xrandr --output "$XRSCREEN" --brightness 1.0
+}
+
+##
+## POWER SAVE ON
+##
+
+battery_power()
+{
+  ##
+  ## screen: dim brightness
+  ##
+  xrandr --output "$XRSCREEN" --brightness 0.6
+}
+
+##
+## APPLY SETTINGS
+##
+case "$1" in
+  false) ac_power ;;
+  true) battery_power ;;
+esac
