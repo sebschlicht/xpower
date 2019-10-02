@@ -1,53 +1,32 @@
-# xpower
-`xpower` is a tool (shell script) for laptops running Ubuntu (15.04 and above, I guess) that enables users to maintain independent screen setting sets for the two power modes _AC_ and _battery_ via the _System Settings_.
+# XPower Setup
 
-The tool automatically recovers the appropriate screen settings on startup and swaps the two screen setting sets whenever the power cable is plugged or unplugged.
+`xpower` is a collection of scripts and rules to toggle the laptop screen brightness when the AC is (un-)plugged.
 
-For example, it allows to have a high screen brightness when the power cable is connected and a low screen brightness when the laptop is running on battery.
-There is a full [list of features](#features) below.
-
-`xpower` will be available as a package for Ubuntu and may be ported to other Unix distributions as well.
-
-## Features
-
-* allows to define screen settings per power mode (AC, battery) including
- * backlight brightness (managed via `xbacklight`)
- * screen idle delay (managed via `gsettings`)
- * screen dimming flag (managed via `gsettings`)
- * DPMS (managed via `xset`)
-* restores the applicable screen settings after rebooting and suspending
+Adjusting the screen brightness at this point is a part of the power management.
+The README shows hows to [install](#installation) and [configure](#configuration) `xpower`.
+Read [the wiki](https://github.com/sebschlicht/xpower/wiki) for background information on `xpower` and power management.
 
 ## Installation
 
-1. clone the repository
+Clone the repository and run the installer:
 
-1. switch into the repository
-   
-        cd xpower
+    git clone git@github.com:sebschlicht/xpower.git
+    cd xpower
+    ./install
 
-1. execute the [installer](install.sh)
-   
-        chmod u+x install.sh
-        ./install.sh
-       
-   Note: The installer has to use `sudo` in order to make necessary changes to the udev rules, for example.
-   For more details concerning the steps of the installer, refer to the [manual installation instructions](manual-installation.md).
+It installs `pm-utils`, related scripts and device rules.
 
-## Usage
+## Configuration
 
-Once installed, you can change the screen settings in the _System Settings_ of Ubuntu as you're used to.
-However, these settings are now separated for the two power modes _AC_ and _battery_.
+By default, `xpower` toggles the screen brightness between 100 and 65 percent when running on AC or battery, respectively.
 
-Set a high brightness when your power cable is connected and exit the _System Settings_.  
-Unplug the power cable, re-open the _System Settings_ and set a low brightness.  
-Plug in the power cable again and the screen will be lightened up.  
-Unplug the power cable again and the screen will darken.
+To change these values, you can only edit the [brightness script](https://github.com/sebschlicht/xpower/tree/develop/pm/00-screen-brightness) directly for now.
 
-Please note that the swapping of the screen settings will require you to close and re-open the _System Settings_ in order to see the changes in the GUI.
+## Resources
 
-## Open Questions
-
-
-* How to integrate that into the unity settings?
-* Will it be necessary to monitor `dconf` for screen setting changes in order to synchronize the settings if the system is powered off spontaneously?
+* [1] https://askubuntu.com/questions/285434/is-there-a-power-saving-application-similar-to-jupiter
+* [2] https://help.ubuntu.com/community/PowerManagement/ReducedPower
+* [3] https://askubuntu.com/questions/765840/does-pm-powersave-start-automatically-when-running-on-battery
+* [4] https://wiki.archlinux.org/index.php/Udev
+* [5] https://askubuntu.com/questions/149054/how-to-change-lcd-brightness-from-command-line-or-via-script
 

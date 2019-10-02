@@ -1,0 +1,53 @@
+#!/bin/bash
+#
+# A script to toggle the screen brightness using xrandr.
+#
+# To install:
+#
+# sudo install 00-screen-brightness /etc/pm/sleep.d
+# sudo install 00-screen-brightness /etc/pm/power.d
+#
+
+# detect display
+BRIGHTDIR=/sys/class/backlight/intel_backlight
+BRIGHTFILE="$BRIGHTDIR"/brightness
+BRIGHTMAX=$( cat "$BRIGHTDIR"/max_brightness )
+BRIGHTDIM=$(( BRIGHTMAX * 65/100 ))
+
+##
+## POWER SAVE OFF
+##
+ac_power()
+{
+  ##
+  ## screen: full brightness
+  ##
+  fc_set_brightness "$BRIGHTMAX"
+}
+
+##
+## POWER SAVE ON
+##
+
+battery_power()
+{
+  ##
+  ## screen: dim brightness
+  ##
+  fc_set_brightness "$BRIGHTDIM"
+}
+
+fc_set_brightness ()
+{
+  # xrandr: hard as su, depends on X session
+  echo "$1" > "$BRIGHTFILE"
+}
+
+##
+## APPLY SETTINGS
+##
+case "$1" in
+  false) ac_power ;;
+  true) battery_power ;;
+esac
+exit 0
