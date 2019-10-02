@@ -1,4 +1,4 @@
-# XPower Setup
+# XPower - Brightness Power Management
 
 `xpower` is a collection of scripts and rules to toggle the laptop screen brightness when the AC is (un-)plugged.
 
@@ -14,19 +14,24 @@ Clone the repository and run the installer:
     cd xpower
     ./install
 
-It installs `pm-utils`, related scripts and device rules.
+It installs `pm-utils`, the brightness script for `pm` and device rules to trigger `pm-powersave` when the AC is (un-)plugged.
 
 ## Configuration
 
-By default, `xpower` toggles the screen brightness between 100 and 65 percent when running on AC or battery, respectively.
+By default, `xpower` toggles the screen brightness between 100 and 65 percent when plugging or unplugging the AC.
+Edit `~/config/xpower/brightness` to change this behavior.
 
-To change these values, you can only edit the [brightness script](https://github.com/sebschlicht/xpower/tree/develop/pm/00-screen-brightness) directly for now.
+For example, if you want the screen brightness to be 50 percent when on battery, use
 
-## Resources
+    battery_brightness=50
 
-* [1] https://askubuntu.com/questions/285434/is-there-a-power-saving-application-similar-to-jupiter
-* [2] https://help.ubuntu.com/community/PowerManagement/ReducedPower
-* [3] https://askubuntu.com/questions/765840/does-pm-powersave-start-automatically-when-running-on-battery
-* [4] https://wiki.archlinux.org/index.php/Udev
-* [5] https://askubuntu.com/questions/149054/how-to-change-lcd-brightness-from-command-line-or-via-script
+If you don't want the brightness to change when plugging the AC in, use
+
+    ac_brightness=
+
+Unplugging the AC can only reduce the brightness, by default.
+If you want `xpower` to set the battery brightness even if it's higher than the current one, use
+
+    force_brightness=1
+
 
