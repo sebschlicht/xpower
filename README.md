@@ -32,6 +32,6 @@ If you don't want the brightness to change when plugging the AC in, use
 Unplugging the AC can only reduce the brightness, by default.
 If you want `xpower` to set the battery brightness even if it's higher than the current one, use
 
-    force_brightness=1
+    enforce_brightness=1
 
 
