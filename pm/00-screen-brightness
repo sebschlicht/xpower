@@ -40,6 +40,26 @@ fc_detect_display_type ()
   fi
 }
 
+# Initializes all variables of the current display type.
+#
+# Params:
+# 1. (string) current display type
+fc_init ()
+{
+  case "$1" in
+    intel)
+      # intel backlight: load absolute maximum brightness
+      BRIGHTFILE="$INTEL_BRIGHTDIR"/brightness
+      BRIGHTMAX=$( cat "$INTEL_BRIGHTDIR"/max_brightness )
+      ;;
+    *)
+      # TODO check this in installation
+      echo "Unknown display type."
+      exit 1
+      ;;
+  esac
+}
+
 # Gets the current screen brightness.
 #
 # Returns: (int) current screen brightness in percent
@@ -78,44 +98,44 @@ fc_set_brightness ()
 
 # intel backlight
 INTEL_BRIGHTDIR=/sys/class/backlight/intel_backlight
-INTEL_BRIGHTFILE="$INTEL_BRIGHTDIR"/brightness
-INTEL_MAXBRIGHTFILE="$INTEL_BRIGHTDIR"/max_brightness
 
-# detect display type and initialize required variables
-DISPLAYTYPE=$( fc_detect_display_type )
-case "$DISPLAYTYPE" in
-  intel)
-    # intel backlight: load absolute maximum brightness
-    BRIGHTFILE="$INTEL_BRIGHTFILE"
-    BRIGHTMAX=$( cat "$INTEL_MAXBRIGHTFILE" )
-    ;;
-  *)
+if [ "${BASH_SOURCE[0]}" == "${0}" ]; then
+  BRIGHTFILE=
+  BRIGHTMAX=
+
+  # detect and initialize for display type or exit
+  DISPLAYTYPE=$( fc_detect_display_type )
+  if [ -n "$DISPLAYTYPE" ]; then
+    fc_init "$DISPLAYTYPE"
+    echo "brightness file: $BRIGHTFILE"
+  else
     # TODO check this in installation
-    echo "Display type not supported."
+    echo "Unknown display type."
     exit 1
-    ;;
-esac
-# get current brightness
-CURRENT_BRIGHTNESS=$( fc_get_brightness )
+  fi
 
-# defaults
-battery_brightness=65
-ac_brightness=100
-enforce_brightness=false
+  # get current brightness
+  CURRENT_BRIGHTNESS=$( fc_get_brightness )
 
-# get primary user
-USER=$( who | head -n 1 | cut -d ' ' -f1 )
-# load user configuration, if existing
-CFGFILE="/home/$USER/.config/xpower/brightness"
-if [ -f "$CFGFILE" ]; then
-  source "$CFGFILE"
+  # defaults
+  battery_brightness=65
+  ac_brightness=100
+  enforce_brightness=false
+
+  # get primary user
+  USER=$( who | head -n 1 | cut -d ' ' -f1 )
+  # load user configuration, if existing
+  CFGFILE="/home/$USER/.config/xpower/brightness"
+  if [ -f "$CFGFILE" ]; then
+    source "$CFGFILE"
+  fi
+
+  ##
+  ## APPLY SETTINGS
+  ##
+  case "$1" in
+    false) ac_power ;;
+    true) battery_power ;;
+  esac
+  exit 0
 fi
-
-##
-## APPLY SETTINGS
-##
-case "$1" in
-  false) ac_power ;;
-  true) battery_power ;;
-esac
-exit 0
