@@ -13,12 +13,9 @@
 ##
 ac_power()
 {
-  # calculate targeted AC brightness
-  local AC_BRIGHTNESS="$(( BRIGHTMAX * ac_brightness / 100 ))"
-
   # set AC brightness if enforced or higher than current one
-  if [ "$enforce_brightness" == "true" ] || [ "$AC_BRIGHTNESS" -gt "$CURRENT_BRIGHTNESS" ]; then
-    fc_set_brightness "$AC_BRIGHTNESS"
+  if [ "$enforce_brightness" == "true" ] || [ "$ac_brightness" -gt "$CURRENT_BRIGHTNESS" ]; then
+    fc_set_brightness "$ac_brightness"
   fi
 }
 
@@ -27,45 +24,92 @@ ac_power()
 ##
 battery_power()
 {
-  # calculate targeted battery brightness
-  local BATTERY_BRIGHTNESS="$(( BRIGHTMAX * battery_brightness / 100 ))"
-
   # set battery brightness if enforced or lower than current one
-  if [ "$enforce_brightness" == "true" ] || [ "$BATTERY_BRIGHTNESS" -lt "$CURRENT_BRIGHTNESS" ]; then
-    fc_set_brightness "$BATTERY_BRIGHTNESS"
+  if [ "$enforce_brightness" == "true" ] || [ "$battery_brightness" -lt "$CURRENT_BRIGHTNESS" ]; then
+    fc_set_brightness "$battery_brightness"
   fi
 }
 
+# Tries to detect one of the supported display types.
+#
+# Returns: (string) display type identifier or empty string if type not supported
+fc_detect_display_type ()
+{
+  if [ -d "$INTEL_BRIGHTDIR" ]; then
+    echo 'intel'
+  fi
+}
+
+# Gets the current screen brightness.
+#
+# Returns: (int) current screen brightness in percent
 fc_get_brightness ()
 {
-  cat "$BRIGHTFILE"
+  case "$DISPLAYTYPE" in
+    # intel backlight: convert absolute brightness from brightness file to relative brightness
+    intel)
+      local ABSOLUTE_BRIGHTNESS=$( cat "$BRIGHTFILE" )
+      echo "$(( ABSOLUTE_BRIGHTNESS * 100 / BRIGHTMAX ))"
+      ;;
+    *)
+      return 1
+      ;;
+  esac
 }
 
+# Sets the desired screen brightness.
+#
+# Params:
+# 1. (int) desired screen brightness in percent
 fc_set_brightness ()
 {
-  # xrandr: hard as su, depends on X session
-  echo "$1" > "$BRIGHTFILE"
+  case "$DISPLAYTYPE" in
+    # intel backlight: write absolute brightness to brightness file
+    intel)
+      local RELATIVE_BRIGHTNESS="$1"
+      local ABSOLUTE_BRIGHTNESS="$(( BRIGHTMAX * RELATIVE_BRIGHTNESS / 100 ))"
+      echo "$ABSOLUTE_BRIGHTNESS" > "$BRIGHTFILE"
+      ;;
+    *)
+      return 1
+      ;;
+  esac
 }
 
-# get primary user
-USER=$( who | head -n 1 | cut -d ' ' -f1 )
+# intel backlight
+INTEL_BRIGHTDIR=/sys/class/backlight/intel_backlight
+INTEL_BRIGHTFILE="$INTEL_BRIGHTDIR"/brightness
+INTEL_MAXBRIGHTFILE="$INTEL_BRIGHTDIR"/max_brightness
+
+# detect display type and initialize required variables
+DISPLAYTYPE=$( fc_detect_display_type )
+case "$DISPLAYTYPE" in
+  intel)
+    # intel backlight: load absolute maximum brightness
+    BRIGHTFILE="$INTEL_BRIGHTFILE"
+    BRIGHTMAX=$( cat "$INTEL_MAXBRIGHTFILE" )
+    ;;
+  *)
+    # TODO check this in installation
+    echo "Display type not supported."
+    exit 1
+    ;;
+esac
+# get current brightness
+CURRENT_BRIGHTNESS=$( fc_get_brightness )
 
 # defaults
 battery_brightness=65
 ac_brightness=100
 enforce_brightness=false
 
-# load configuration, if existing
+# get primary user
+USER=$( who | head -n 1 | cut -d ' ' -f1 )
+# load user configuration, if existing
 CFGFILE="/home/$USER/.config/xpower/brightness"
 if [ -f "$CFGFILE" ]; then
   source "$CFGFILE"
 fi
-
-# detect display
-BRIGHTDIR=/sys/class/backlight/intel_backlight
-BRIGHTFILE="$BRIGHTDIR"/brightness
-BRIGHTMAX=$( cat "$BRIGHTDIR"/max_brightness )
-CURRENT_BRIGHTNESS=$( fc_get_brightness )
 
 ##
 ## APPLY SETTINGS
