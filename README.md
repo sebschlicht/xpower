@@ -30,3 +30,11 @@ Analogously, plugging the AC only increases the brightness.
 If you want `xpower` to apply the specified brightness in any case, use
 
     enforce_brightness=1
+
+## Compatibility
+
+Currently `xpower` is compatible with the following list of displays which will be extended contiuously:
+
+* Intel
+
+If your display type is not supported, `xpower` will notify you at the installation process right away.
