@@ -37,6 +37,8 @@ fc_detect_display_type ()
 {
   if [ -d "$INTEL_BRIGHTDIR" ]; then
     echo 'intel'
+  else
+    return 1
   fi
 }
 

@@ -1,5 +1,20 @@
 #!/bin/bash
 
+# ask user whether to proceed if display type unknown
+source pm/00-screen-brightness
+if ! fc_detect_display_type 1>/dev/null; then
+  echo 'Unknown display type detected, xpower will not work with your system.'
+  read -p 'Proceed anyway? [y]es, [n]o: ' XPOWER_ENFORCE_INSTALLATION
+  case "$XPOWER_ENFORCE_INSTALLATION" in
+    y|Y)
+      ;;
+    *)
+      echo 'Aborting installation on user behalf.'
+      exit 1
+      ;;
+  esac
+fi
+
 fc_is_package_installed ()
 {
   local STATUS=$( dpkg -s "$1" | grep '^Status' | grep 'ok installed' )
