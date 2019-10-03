@@ -19,19 +19,14 @@ It installs `pm-utils`, the brightness script for `pm` and device rules to trigg
 ## Configuration
 
 By default, `xpower` toggles the screen brightness between 100 and 65 percent when plugging or unplugging the AC.
-Edit `~/config/xpower/brightness` to change this behavior.
+Edit the config file `~/config/xpower/brightness` to change this behavior.
 
 For example, if you want the screen brightness to be 50 percent when on battery, use
 
     battery_brightness=50
 
-If you don't want the brightness to change when plugging the AC in, use
-
-    ac_brightness=
-
-Unplugging the AC can only reduce the brightness, by default.
-If you want `xpower` to set the battery brightness even if it's higher than the current one, use
+Unplugging the AC does not increase the brightness, by default.
+Analogously, plugging the AC only increases the brightness.
+If you want `xpower` to apply the specified brightness in any case, use
 
     enforce_brightness=1
-
-
