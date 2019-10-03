@@ -55,8 +55,11 @@ battery_brightness=65
 ac_brightness=100
 enforce_brightness=false
 
-# load configuration
-source "/home/$USER/.config/xpower/brightness"
+# load configuration, if existing
+CFGFILE="/home/$USER/.config/xpower/brightness"
+if [ -f "$CFGFILE" ]; then
+  source "$CFGFILE"
+fi
 
 # detect display
 BRIGHTDIR=/sys/class/backlight/intel_backlight
