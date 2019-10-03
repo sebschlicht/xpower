@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# A script to toggle the screen brightness using xrandr.
+# A script to toggle the screen brightness using file-based brightness settings.
 #
 # To install:
 #
@@ -8,33 +8,37 @@
 # sudo install 00-screen-brightness /etc/pm/power.d
 #
 
-# detect display
-BRIGHTDIR=/sys/class/backlight/intel_backlight
-BRIGHTFILE="$BRIGHTDIR"/brightness
-BRIGHTMAX=$( cat "$BRIGHTDIR"/max_brightness )
-BRIGHTDIM=$(( BRIGHTMAX * 65/100 ))
-
 ##
 ## POWER SAVE OFF
 ##
 ac_power()
 {
-  ##
-  ## screen: full brightness
-  ##
-  fc_set_brightness "$BRIGHTMAX"
+  # calculate targeted AC brightness
+  local AC_BRIGHTNESS="$(( BRIGHTMAX * ac_brightness / 100 ))"
+
+  # set AC brightness if enforced or higher than current one
+  if [ "$enforce_brightness" == "true" ] || [ "$AC_BRIGHTNESS" -gt "$CURRENT_BRIGHTNESS" ]; then
+    fc_set_brightness "$AC_BRIGHTNESS"
+  fi
 }
 
 ##
 ## POWER SAVE ON
 ##
-
 battery_power()
 {
-  ##
-  ## screen: dim brightness
-  ##
-  fc_set_brightness "$BRIGHTDIM"
+  # calculate targeted battery brightness
+  local BATTERY_BRIGHTNESS="$(( BRIGHTMAX * battery_brightness / 100 ))"
+
+  # set battery brightness if enforced or lower than current one
+  if [ "$enforce_brightness" == "true" ] || [ "$BATTERY_BRIGHTNESS" -lt "$CURRENT_BRIGHTNESS" ]; then
+    fc_set_brightness "$BATTERY_BRIGHTNESS"
+  fi
+}
+
+fc_get_brightness ()
+{
+  cat "$BRIGHTFILE"
 }
 
 fc_set_brightness ()
@@ -42,6 +46,23 @@ fc_set_brightness ()
   # xrandr: hard as su, depends on X session
   echo "$1" > "$BRIGHTFILE"
 }
+
+# get primary user
+USER=$( who | head -n 1 | cut -d ' ' -f1 )
+
+# defaults
+battery_brightness=65
+ac_brightness=100
+enforce_brightness=false
+
+# load configuration
+source "/home/$USER/.config/xpower/brightness"
+
+# detect display
+BRIGHTDIR=/sys/class/backlight/intel_backlight
+BRIGHTFILE="$BRIGHTDIR"/brightness
+BRIGHTMAX=$( cat "$BRIGHTDIR"/max_brightness )
+CURRENT_BRIGHTNESS=$( fc_get_brightness )
 
 ##
 ## APPLY SETTINGS
