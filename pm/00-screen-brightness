@@ -30,53 +30,16 @@ battery_power()
   fi
 }
 
-# Tries to detect one of the supported display types.
-#
-# Returns: (string) display type identifier or empty string if type not supported
-fc_detect_display_type ()
-{
-  if [ -d "$INTEL_BRIGHTDIR" ]; then
-    echo 'intel'
-  else
-    return 1
-  fi
-}
-
-# Initializes all variables of the current display type.
-#
-# Params:
-# 1. (string) current display type
-fc_init ()
-{
-  case "$1" in
-    intel)
-      # intel backlight: load absolute maximum brightness
-      BRIGHTFILE="$INTEL_BRIGHTDIR"/brightness
-      BRIGHTMAX=$( cat "$INTEL_BRIGHTDIR"/max_brightness )
-      ;;
-    *)
-      # TODO check this in installation
-      echo "Unknown display type."
-      exit 1
-      ;;
-  esac
-}
-
 # Gets the current screen brightness.
 #
 # Returns: (int) current screen brightness in percent
 fc_get_brightness ()
 {
-  case "$DISPLAYTYPE" in
-    # intel backlight: convert absolute brightness from brightness file to relative brightness
-    intel)
-      local ABSOLUTE_BRIGHTNESS=$( cat "$BRIGHTFILE" )
-      echo "$(( ABSOLUTE_BRIGHTNESS * 100 / BRIGHTMAX ))"
-      ;;
-    *)
-      return 1
-      ;;
-  esac
+  # get current and maximum absolute brightness
+  local CURRENT_BRIGHTNESS=$( brightnessctl g )
+  local MAX_BRIGHTNESS=$( brightnessctl m )
+  # calculate relative brightness
+  echo $(( CURRENT_BRIGHTNESS * 100 / MAX_BRIGHTNESS ))
 }
 
 # Sets the desired screen brightness.
@@ -85,40 +48,10 @@ fc_get_brightness ()
 # 1. (int) desired screen brightness in percent
 fc_set_brightness ()
 {
-  case "$DISPLAYTYPE" in
-    # intel backlight: write absolute brightness to brightness file
-    intel)
-      local RELATIVE_BRIGHTNESS="$1"
-      local ABSOLUTE_BRIGHTNESS="$(( BRIGHTMAX * RELATIVE_BRIGHTNESS / 100 ))"
-      echo "$ABSOLUTE_BRIGHTNESS" > "$BRIGHTFILE"
-      ;;
-    *)
-      return 1
-      ;;
-  esac
+  brightnessctl s "$1%"
 }
 
-# intel backlight
-INTEL_BRIGHTDIR=/sys/class/backlight/intel_backlight
-
 if [ "${BASH_SOURCE[0]}" == "${0}" ]; then
-  BRIGHTFILE=
-  BRIGHTMAX=
-
-  # detect and initialize for display type or exit
-  DISPLAYTYPE=$( fc_detect_display_type )
-  if [ -n "$DISPLAYTYPE" ]; then
-    fc_init "$DISPLAYTYPE"
-    echo "brightness file: $BRIGHTFILE"
-  else
-    # TODO check this in installation
-    echo "Unknown display type."
-    exit 1
-  fi
-
-  # get current brightness
-  CURRENT_BRIGHTNESS=$( fc_get_brightness )
-
   # defaults
   battery_brightness=65
   ac_brightness=100
@@ -131,6 +64,9 @@ if [ "${BASH_SOURCE[0]}" == "${0}" ]; then
   if [ -f "$CFGFILE" ]; then
     source "$CFGFILE"
   fi
+
+  # get current brightness
+  CURRENT_BRIGHTNESS=$( fc_get_brightness )
 
   ##
   ## APPLY SETTINGS
